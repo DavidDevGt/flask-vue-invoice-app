@@ -39,6 +39,7 @@ CREATE TABLE clientes (
     direccion VARCHAR(200) NOT NULL,
     telefono VARCHAR(45),
     email VARCHAR(255),
+    es_nit BOOLEAN DEFAULT TRUE,
     active BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -69,6 +70,7 @@ CREATE TABLE pedido_d (
 
 CREATE TABLE facturas (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    dte VARCHAR(255) DEFAULT NULL,
     pedido_id INT NOT NULL,
     cliente_id INT NOT NULL,
     fecha_factura DATE NOT NULL,
@@ -231,4 +233,4 @@ CREATE PROCEDURE EliminarPermisoRol(IN _id INT)
 BEGIN
     UPDATE permisos SET active = FALSE WHERE id = _id;
 END$$
-DELIMITER ;
+DELIMITER ; 
