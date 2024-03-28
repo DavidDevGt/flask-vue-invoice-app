@@ -8,9 +8,3 @@ class Usuario:
         self.active = active
         self.fecha_creacion = fecha_creacion
         self.fecha_modificacion = fecha_modificacion
-        
-    def __str__(self):
-        return f"Usuario(id={self.id}, nombre='{self.nombre}', email='{self.email}', password='{self.password}', rol_id={self.rol_id}, active={self.active}, fecha_creacion='{self.fecha_creacion}', fecha_modificacion='{self.fecha_modificacion}')"
-
-    def __repr__(self):
-        return f"Usuario(id={self.id}, nombre='{self.nombre}', email='{self.email}', password='{self.password}', rol_id={self.rol_id}, active={self.active}, fecha_creacion='{self.fecha_creacion}', fecha_modificacion='{self.fecha_modificacion}')"
