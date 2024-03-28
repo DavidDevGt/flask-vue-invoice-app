@@ -151,19 +151,21 @@ CREATE TABLE egresos_d (
 
 CREATE TABLE movimientos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    tipo VARCHAR(45) NOT NULL, -- Ejemplos: 'ajuste', 'transferencia'
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario_id INT NOT NULL,
-    observaciones TEXT,
-    active INT DEFAULT 1
+    articulo_id INT NOT NULL,
+    stock INT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE movimientos_d (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    movimiento_id INT NOT NULL,
+    usuario_id INT NOT NULL,
     articulo_id INT NOT NULL,
     cantidad DECIMAL(10,2),
-    costo DECIMAL(20,2)
+    tipo VARCHAR(45) NOT NULL, -- Ejemplos: 'EGRESO', 'INGRESO', 'AJUSTE INVENTARIO'
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE categorias (
