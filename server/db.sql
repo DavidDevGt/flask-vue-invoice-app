@@ -163,7 +163,7 @@ CREATE TABLE movimientos_d (
     usuario_id INT NOT NULL,
     documento_id INT NOT NULL, -- Aqui tiene que ir egreso_id o ingreso_id
     articulo_id INT NOT NULL,
-    cantidad DECIMAL(10,2),
+    cantidad INT NOT NULL,
     tipo VARCHAR(45) NOT NULL, -- Ejemplos: 'EGRESO', 'INGRESO', 'AJUSTE INVENTARIO'
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
