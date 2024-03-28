@@ -161,6 +161,7 @@ CREATE TABLE movimientos (
 CREATE TABLE movimientos_d (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
+    documento_id INT NOT NULL, -- Aqui tiene que ir egreso_id o ingreso_id
     articulo_id INT NOT NULL,
     cantidad DECIMAL(10,2),
     tipo VARCHAR(45) NOT NULL, -- Ejemplos: 'EGRESO', 'INGRESO', 'AJUSTE INVENTARIO'
