@@ -98,13 +98,28 @@ CREATE TABLE articulos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
     descripcion TEXT,
-    precio DECIMAL(20,2),
-    costo DECIMAL(20,2),
-    precio_sin_iva DECIMAL(20,2),
-    costo_sin_iva DECIMAL(20,2),
     active BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tipos_precio (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL, -- Ejemplo: 'Publico', 'Mayorista', 'Super Mayorista'
+    descripcion TEXT,
+    active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE precios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    articulo_id INT NOT NULL,
+    tipo_precio_id INT NOT NULL,
+    precio DECIMAL(20,2) NOT NULL,
+    costo DECIMAL(20,2),
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (articulo_id) REFERENCES articulos(id),
+    FOREIGN KEY (tipo_precio_id) REFERENCES tipos_precio(id)
 );
 
 CREATE TABLE modulos (
