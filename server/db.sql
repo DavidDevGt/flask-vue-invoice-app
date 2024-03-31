@@ -114,6 +114,11 @@ CREATE TABLE tipos_precio (
     active BOOLEAN DEFAULT TRUE
 );
 
+-- Insertar tipos de precios
+INSERT INTO tipos_precio (nombre, descripcion) VALUES ('Publico', 'Precio para el consumidor final');
+INSERT INTO tipos_precio (nombre, descripcion) VALUES ('Mayorista', 'Precio para compras al por mayor');
+INSERT INTO tipos_precio (nombre, descripcion) VALUES ('Super Mayorista', 'Precio para compras en grandes cantidades');
+
 CREATE TABLE precios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     articulo_id INT NOT NULL,
