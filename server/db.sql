@@ -51,10 +51,12 @@ CREATE TABLE pedidos (
     fecha_pedido DATE NOT NULL,
     forma_de_pago INT DEFAULT 0,
     total DECIMAL(20,2),
-    status INT DEFAULT 1,
+    status INT DEFAULT 1, -- 0 = Rechazado, 1 = Creado, 2 = Pend. Autorizar, 3 = Autorizado, 4 = En Bodega, 5 = Pedido Completado (se crea factura)
     observaciones TEXT,
+    usuario_id INT NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE pedido_d (
@@ -78,9 +80,11 @@ CREATE TABLE facturas (
     total DECIMAL(20,2),
     serie VARCHAR(45),
     numero_factura INT,
-    status INT DEFAULT 1,
+    status INT DEFAULT 1, # 0 = Anulada, 1 = Creada, 3 = En Transito, 4 = Anulada, 5 = Firmada FEL
+    usuario_id INT NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE factura_d (
@@ -137,7 +141,8 @@ CREATE TABLE ingresos (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_id INT NOT NULL,
     observaciones TEXT,
-    active INT DEFAULT 1
+    active INT DEFAULT 1,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE ingresos_d (
@@ -153,7 +158,8 @@ CREATE TABLE egresos (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_id INT NOT NULL,
     observaciones TEXT,
-    active INT DEFAULT 1
+    active INT DEFAULT 1,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE egresos_d (
@@ -169,8 +175,10 @@ CREATE TABLE movimientos (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     articulo_id INT NOT NULL,
     stock INT NOT NULL,
+    usuario_last_update INT NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_last_update) REFERENCES usuarios(id)
 );
 
 CREATE TABLE movimientos_d (
@@ -181,7 +189,8 @@ CREATE TABLE movimientos_d (
     cantidad INT NOT NULL,
     tipo VARCHAR(45) NOT NULL, -- Ejemplos: 'EGRESO', 'INGRESO', 'AJUSTE INVENTARIO'
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE categorias (
@@ -197,6 +206,30 @@ CREATE TABLE subcategorias (
     nombre VARCHAR(100) NOT NULL,
     descripcion TEXT,
     active INT DEFAULT 1
+);
+
+-- Bitacoras
+
+CREATE TABLE bitacora_movimientos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    movimiento_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    tipo VARCHAR(50) NOT NULL, -- Ejemplo: 'CREACION', 'ACTUALIZACION', 'ELIMINACION'
+    descripcion TEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (movimiento_id) REFERENCES movimientos(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+CREATE TABLE bitacora_facturas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    factura_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    tipo VARCHAR(50) NOT NULL, -- Ejemplo: 'CREACION', 'MODIFICACION', 'ANULACION'
+    descripcion TEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (factura_id) REFERENCES facturas(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 DELIMITER $$
@@ -252,3 +285,52 @@ BEGIN
     UPDATE permisos SET active = FALSE WHERE id = _id;
 END$$
 DELIMITER ; 
+
+# Triggers
+
+-- Movimientos Crear
+DELIMITER //
+CREATE TRIGGER after_movimiento_insert
+AFTER INSERT ON movimientos
+FOR EACH ROW
+BEGIN
+    INSERT INTO bitacora_movimientos(movimiento_id, usuario_id, tipo, descripcion)
+    VALUES (NEW.id, NEW.usuario_last_update, 'CREACION', CONCAT('Creación de movimiento de stock con ID ', NEW.id));
+END; //
+DELIMITER ;
+
+-- Movimientos Actualizar
+DELIMITER //
+CREATE TRIGGER after_movimiento_update
+AFTER UPDATE ON movimientos
+FOR EACH ROW
+BEGIN
+    INSERT INTO bitacora_movimientos(movimiento_id, usuario_id, tipo, descripcion)
+    VALUES (NEW.id, NEW.usuario_last_update, 'ACTUALIZACION', CONCAT('Actualización de movimiento de stock con ID ', NEW.id));
+END; //
+DELIMITER ;
+
+-- Facturas Crear
+DELIMITER //
+CREATE TRIGGER after_factura_insert
+AFTER INSERT ON facturas
+FOR EACH ROW
+BEGIN
+    INSERT INTO bitacora_facturas(factura_id, usuario_id, tipo, descripcion)
+    VALUES (NEW.id, NEW.usuario_id, 'CREACION', CONCAT('Creación de factura con ID ', NEW.id));
+END; //
+DELIMITER ;
+
+-- Facturas Anular
+DELIMITER //
+CREATE TRIGGER after_factura_anulacion
+AFTER UPDATE ON facturas
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 0 AND OLD.status != 0 THEN
+        INSERT INTO bitacora_facturas(factura_id, usuario_id, tipo, descripcion)
+        VALUES (NEW.id, NEW.usuario_id, 'ANULACION', CONCAT('Anulación de factura con ID ', NEW.id, '. Razón: Cambio de estado a 0.'));
+    END IF;
+END; //
+DELIMITER ;
+
