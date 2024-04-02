@@ -14,10 +14,10 @@ export default {
         const myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Enero', 'Febrero', 'Marzo', 'Abril'],
+                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
                 datasets: [{
                     label: 'Ventas',
-                    data: [5000, 4000, 3000, 5000],
+                    data: [5000, 4000, 3000, 5000, 2500, 8000],
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
